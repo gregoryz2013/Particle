@@ -1,21 +1,14 @@
 package org.example;
 
-import org.example.Field;
-import org.example.Link;
-import org.example.Particle;
-import org.example.ParticleType;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.net.http.WebSocket;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class Main extends JFrame implements Runnable {
 
-    private final int w = 2560;
+    private final int w = 2570;
     private final int h = 1440;
 
     private final Color BG = new Color(20, 55, 75, 255);
