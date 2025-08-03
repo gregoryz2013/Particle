@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class Main extends JFrame implements Runnable {
 
-    private final int w = 2570;
+    private final int w = 2560;
     private final int h = 1440;
 
     private final Color BG = new Color(20, 55, 75, 255);
@@ -238,10 +238,10 @@ public class Main extends JFrame implements Runnable {
         Particle p2 = add(1, x - 4, y + 0);
         Particle p3 = add(2, x - 4, y - -18);
         Particle p4 = add(0, x - 4, y - -28);
-        Particle p6 = add(0, x + 4, y - 18);
+        Particle p6 = add(0, x + 4, y + 18);
         Particle p7 = add(1, x + 4, y + 0);
-        Particle p8 = add(2, x + 4, y - -18);
-        Particle p9 = add(0, x + 4, y - -28);
+        Particle p8 = add(2, x + 4, y + -18);
+        Particle p9 = add(0, x + 4, y + -28);
         links.add(new Link(p1, p2));
         p1.links +=1;
         p2.links +=1;
