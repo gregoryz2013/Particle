@@ -72,7 +72,7 @@ public class Main extends JFrame implements Runnable {
 
 //        this.setSize(w + 16, h + 38);
         this.setExtendedState(Frame.MAXIMIZED_BOTH);
-        this.setUndecorated(false);
+        this.setUndecorated(true);
         this.setSize(w, h);// Removes window decorations
 //        this.setLocation(0, 0);
 
@@ -83,7 +83,6 @@ public class Main extends JFrame implements Runnable {
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setLocation(50, 50);
         this.add(new JLabel(new ImageIcon(img)));
         this.getGlassPane().setBackground(BG);
         MouseWheelListener wheelListener = new MouseWheelListener();
@@ -291,7 +290,7 @@ public class Main extends JFrame implements Runnable {
     public void paint(Graphics g) {
         drawScene(img);
         for (int i = 0; i < SKIP_FRAMES; i++) logic();
-        ((Graphics2D)g).drawImage(img, null, 8, 30);
+        ((Graphics2D)g).drawImage(img, null, 0, 0);
         frame++;
     }
 
@@ -321,122 +320,99 @@ public class Main extends JFrame implements Runnable {
 
     private void logic() {
         if (paused == 0){
-        for (int i = 0; i < fw; i++) {
-            for (int j = 0; j < fh; j++) {
-                Field field = fields[i][j];
-                for (int i1 = 0; i1 < field.particles.size(); i1++) {
-                    Particle a = field.particles.get(i1);
-                    a.x += a.sx;
-                    a.y += a.sy;
-                    a.sx *= 0.98f;
-                    a.sy *= 0.98f;
-                    // velocity normalization
-                    float magnitude = (float)Math.sqrt(a.sx * a.sx + a.sy * a.sy);
-                    if(magnitude > 1f) {
-                        a.sx /= magnitude;
-                        a.sy /= magnitude;
-                    }
-                    // border repulsion
-                    if(a.x < BORDER) {
-                        a.sx += SPEED * 0.05f;
-                        if(a.x < 0) {
-                            a.x = -a.x;
-                            a.sx *= -0.5f;
+            for (int i = 0; i < fw; i++) {
+                for (int j = 0; j < fh; j++) {
+                    Field field = fields[i][j];
+                    for (int i1 = 0; i1 < field.particles.size(); i1++) {
+                        Particle a = field.particles.get(i1);
+                        a.x += a.sx;
+                        a.y += a.sy;
+                        a.sx *= 0.98f;
+                        a.sy *= 0.98f;
+                        // velocity normalization
+                        float magnitude = (float)Math.sqrt(a.sx * a.sx + a.sy * a.sy);
+                        if(magnitude > 1f) {
+                            a.sx /= magnitude;
+                            a.sy /= magnitude;
                         }
-                    }
-                    else if(a.x > w - BORDER) {
-                        a.sx -= SPEED * 0.05f;
-                        if(a.x > w) {
-                            a.x = w * 2 - a.x;
-                            a.sx *= -0.5f;
+                        // border repulsion
+                        if(a.x < BORDER) {
+                            a.sx += SPEED * 0.05f;
+                            if(a.x < 0) {
+                                a.x = -a.x;
+                                a.sx *= -0.5f;
+                            }
                         }
-                    }
-                    if(a.y < BORDER) {
-                        a.sy += SPEED * 0.05f;
-                        if(a.y < 0) {
-                            a.y = -a.y;
-                            a.sy *= -0.5f;
+                        else if(a.x > w - BORDER) {
+                            a.sx -= SPEED * 0.05f;
+                            if(a.x > w) {
+                                a.x = w * 2 - a.x;
+                                a.sx *= -0.5f;
+                            }
                         }
-                    }
-                    else if(a.y > h - BORDER) {
-                        a.sy -= SPEED * 0.05f;
-                        if(a.y > h) {
-                            a.y = h * 2 - a.y;
-                            a.sy *= -0.5f;
+                        if(a.y < BORDER) {
+                            a.sy += SPEED * 0.05f;
+                            if(a.y < 0) {
+                                a.y = -a.y;
+                                a.sy *= -0.5f;
+                            }
                         }
-                    }
-                }
-            }
-        }
-        for (int i = 0; i < links.size(); i++) {
-            Link link = links.get(i);
-            Particle a = link.a;
-            Particle b = link.b;
-            float d2 = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
-            if(d2 > MAX_DIST2 / 4) {
-                a.links--;
-                b.links--;
-                a.bonds.remove(b);
-                b.bonds.remove(a);
-                links.remove(link);
-                i--;
-            }
-            else {
-                if(d2 > NODE_RADIUS * NODE_RADIUS * 4) {
-                    double angle = Math.atan2(a.y - b.y, a.x - b.x);
-                    a.sx += (float)Math.cos(angle) * LINK_FORCE * SPEED;
-                    a.sy += (float)Math.sin(angle) * LINK_FORCE * SPEED;
-                    b.sx -= (float)Math.cos(angle) * LINK_FORCE * SPEED;
-                    b.sy -= (float)Math.sin(angle) * LINK_FORCE * SPEED;
-                }
-            }
-        }
-        // moving particle to another field
-        for (int i = 0; i < fw; i++) {
-            for (int j = 0; j < fh; j++) {
-                Field field = fields[i][j];
-                for (int i1 = 0; i1 < field.particles.size(); i1++) {
-                    Particle a = field.particles.get(i1);
-                    if(((int)(a.x / MAX_DIST) != i) || ((int)(a.y / MAX_DIST) != j)) {
-                        field.particles.remove(a);
-                        fields[(int)(a.x / MAX_DIST)][(int)(a.y / MAX_DIST)].particles.add(a);
-                    }
-                }
-            }
-        }
-        // dividing scene into parts to reduce complexity
-        for (int i = 0; i < fw; i++) {
-            for (int j = 0; j < fh; j++) {
-                Field field = fields[i][j];
-                for (int i1 = 0; i1 < field.particles.size(); i1++) {
-                    Particle a = field.particles.get(i1);
-                    Particle particleToLink = null;
-                    float particleToLinkMinDist2 = (w + h) * (w + h);
-                    for (int j1 = i1 + 1; j1 < field.particles.size(); j1++) {
-                        Particle b = field.particles.get(j1);
-                        float d2 = applyForce(a, b);
-                        if(d2 != -1 && d2 < particleToLinkMinDist2) {
-                            particleToLinkMinDist2 = d2;
-                            particleToLink = b;
-                        }
-                    }
-                    if(i < fw - 1) {
-                        int iNext = i + 1;
-                        Field field1 = fields[iNext][j];
-                        for (int j1 = 0; j1 < field1.particles.size(); j1++) {
-                            Particle b = field1.particles.get(j1);
-                            float d2 = applyForce(a, b);
-                            if(d2 != -1 && d2 < particleToLinkMinDist2) {
-                                particleToLinkMinDist2 = d2;
-                                particleToLink = b;
+                        else if(a.y > h - BORDER) {
+                            a.sy -= SPEED * 0.05f;
+                            if(a.y > h) {
+                                a.y = h * 2 - a.y;
+                                a.sy *= -0.5f;
                             }
                         }
                     }
-                    if(j < fh - 1) {
-                        int jNext = j + 1;
-                        Field field1 = fields[i][jNext];
-                        for (int j1 = 0; j1 < field1.particles.size(); j1++) {
-                            Particle b = field1.particles.get(j1);
+                }
+            }
+            for (int i = 0; i < links.size(); i++) {
+                Link link = links.get(i);
+                Particle a = link.a;
+                Particle b = link.b;
+                float d2 = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+                if(d2 > MAX_DIST2 / 4) {
+                    a.links--;
+                    b.links--;
+                    a.bonds.remove(b);
+                    b.bonds.remove(a);
+                    links.remove(link);
+                    i--;
+                }
+                else {
+                    if(d2 > NODE_RADIUS * NODE_RADIUS * 4) {
+                        double angle = Math.atan2(a.y - b.y, a.x - b.x);
+                        a.sx += (float)Math.cos(angle) * LINK_FORCE * SPEED;
+                        a.sy += (float)Math.sin(angle) * LINK_FORCE * SPEED;
+                        b.sx -= (float)Math.cos(angle) * LINK_FORCE * SPEED;
+                        b.sy -= (float)Math.sin(angle) * LINK_FORCE * SPEED;
+                    }
+                }
+            }
+            // moving particle to another field
+            for (int i = 0; i < fw; i++) {
+                for (int j = 0; j < fh; j++) {
+                    Field field = fields[i][j];
+                    for (int i1 = 0; i1 < field.particles.size(); i1++) {
+                        Particle a = field.particles.get(i1);
+                        if(((int)(a.x / MAX_DIST) != i) || ((int)(a.y / MAX_DIST) != j)) {
+                            field.particles.remove(a);
+                            fields[(int)(a.x / MAX_DIST)][(int)(a.y / MAX_DIST)].particles.add(a);
+                        }
+                    }
+                }
+            }
+            // dividing scene into parts to reduce complexity
+            for (int i = 0; i < fw; i++) {
+                for (int j = 0; j < fh; j++) {
+                    Field field = fields[i][j];
+                    for (int i1 = 0; i1 < field.particles.size(); i1++) {
+                        Particle a = field.particles.get(i1);
+                        Particle particleToLink = null;
+                        float particleToLinkMinDist2 = (w + h) * (w + h);
+                        for (int j1 = i1 + 1; j1 < field.particles.size(); j1++) {
+                            Particle b = field.particles.get(j1);
                             float d2 = applyForce(a, b);
                             if(d2 != -1 && d2 < particleToLinkMinDist2) {
                                 particleToLinkMinDist2 = d2;
@@ -445,9 +421,9 @@ public class Main extends JFrame implements Runnable {
                         }
                         if(i < fw - 1) {
                             int iNext = i + 1;
-                            Field field2 = fields[iNext][jNext];
-                            for (int j1 = 0; j1 < field2.particles.size(); j1++) {
-                                Particle b = field2.particles.get(j1);
+                            Field field1 = fields[iNext][j];
+                            for (int j1 = 0; j1 < field1.particles.size(); j1++) {
+                                Particle b = field1.particles.get(j1);
                                 float d2 = applyForce(a, b);
                                 if(d2 != -1 && d2 < particleToLinkMinDist2) {
                                     particleToLinkMinDist2 = d2;
@@ -455,17 +431,40 @@ public class Main extends JFrame implements Runnable {
                                 }
                             }
                         }
-                    }
-                    if(particleToLink != null) {
-                        a.bonds.add(particleToLink);
-                        particleToLink.bonds.add(a);
-                        a.links++;
-                        particleToLink.links++;
-                        links.add(new Link(a, particleToLink));
+                        if(j < fh - 1) {
+                            int jNext = j + 1;
+                            Field field1 = fields[i][jNext];
+                            for (int j1 = 0; j1 < field1.particles.size(); j1++) {
+                                Particle b = field1.particles.get(j1);
+                                float d2 = applyForce(a, b);
+                                if(d2 != -1 && d2 < particleToLinkMinDist2) {
+                                    particleToLinkMinDist2 = d2;
+                                    particleToLink = b;
+                                }
+                            }
+                            if(i < fw - 1) {
+                                int iNext = i + 1;
+                                Field field2 = fields[iNext][jNext];
+                                for (int j1 = 0; j1 < field2.particles.size(); j1++) {
+                                    Particle b = field2.particles.get(j1);
+                                    float d2 = applyForce(a, b);
+                                    if(d2 != -1 && d2 < particleToLinkMinDist2) {
+                                        particleToLinkMinDist2 = d2;
+                                        particleToLink = b;
+                                    }
+                                }
+                            }
+                        }
+                        if(particleToLink != null) {
+                            a.bonds.add(particleToLink);
+                            particleToLink.bonds.add(a);
+                            a.links++;
+                            particleToLink.links++;
+                            links.add(new Link(a, particleToLink));
+                        }
                     }
                 }
             }
-        }
         }
     }
 
