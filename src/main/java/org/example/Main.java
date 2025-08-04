@@ -83,7 +83,6 @@ public class Main extends JFrame implements Runnable {
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setLocation(50, 50);
         this.add(new JLabel(new ImageIcon(img)));
         this.getGlassPane().setBackground(BG);
         MouseWheelListener wheelListener = new MouseWheelListener();
@@ -291,7 +290,7 @@ public class Main extends JFrame implements Runnable {
     public void paint(Graphics g) {
         drawScene(img);
         for (int i = 0; i < SKIP_FRAMES; i++) logic();
-        ((Graphics2D)g).drawImage(img, null, 8, 30);
+        ((Graphics2D)g).drawImage(img, null, 0, 0);
         frame++;
     }
 
